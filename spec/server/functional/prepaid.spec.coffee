@@ -64,8 +64,8 @@ describe 'GET /db/prepaid/:handle', ->
     prepaid = new Prepaid()
     yield prepaid.save()
     [res, body] = yield request.getAsync({url: getURL("/db/prepaid/#{prepaid.id}"), json: true})
-    expect(body.endDate).toBe('2017-06-20T07:00:00.000Z')
-    expect(body.startDate).toBe('2016-06-20T07:00:00.000Z')
+    expect(body.endDate).toBe(Prepaid.DEFAULT_END_DATE)
+    expect(body.startDate).toBe(Prepaid.DEFAULT_START_DATE)
     done()
   
 
