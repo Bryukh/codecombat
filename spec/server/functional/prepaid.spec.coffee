@@ -104,7 +104,7 @@ describe 'POST /db/prepaid/:handle/redeemers', ->
     expect(res.body.message).toBe('This prepaid is exhausted')
     done()
 
-  it 'returns 403 if the user is not the "creator"', utils.wrap (done) ->
+  it 'returns 403 unless the user is the "creator"', utils.wrap (done) ->
     @otherTeacher = yield utils.initUser({role: 'teacher'})
     yield utils.loginUser(@otherTeacher)
     [res, body] = yield request.postAsync({uri: @url, json: { userID: @student.id } })
@@ -160,6 +160,47 @@ describe 'POST /db/prepaid/:handle/redeemers', ->
     expect(student.get('coursePrepaid')._id.equals(@prepaid._id)).toBe(true)
     done()
 
+
+describe 'DELETE /db/prepaid/:handle/redeemers', ->
+
+  beforeEach utils.wrap (done) ->
+    yield utils.clearModels([Course, CourseInstance, Payment, Prepaid, User])
+    @teacher = yield utils.initUser({role: 'teacher'})
+    @admin = yield utils.initAdmin()
+    yield utils.loginUser(@admin)
+    @prepaid = yield utils.makePrepaid({ creator: @teacher.id })
+    yield utils.loginUser(@teacher)
+    @student = yield utils.initUser()
+    @url = getURL("/db/prepaid/#{@prepaid.id}/redeemers")
+    [res, body] = yield request.postAsync {uri: @url, json: { userID: @student.id } }
+    expect(res.statusCode).toBe(201)
+    done()
+
+  it 'adds a given user to the redeemers property', utils.wrap (done) ->
+    prepaid = yield Prepaid.findById(@prepaid.id)
+    expect(prepaid.get('redeemers').length).toBe(1)
+    [res, body] = yield request.delAsync {uri: @url, json: { userID: @student.id } }
+    expect(body.redeemers.length).toBe(0)
+    expect(res.statusCode).toBe(200)
+    prepaid = yield Prepaid.findById(body._id)
+    expect(prepaid.get('redeemers').length).toBe(0)
+    student = yield User.findById(@student.id)
+    expect(student.get('coursePrepaid')).toBeUndefined()
+    done()
+    
+  it 'returns 403 unless the user is the "creator"', utils.wrap (done) ->
+    otherTeacher = yield utils.initUser({role: 'teacher'})
+    yield utils.loginUser(otherTeacher)
+    [res, body] = yield request.delAsync {uri: @url, json: { userID: @student.id } }
+    expect(res.statusCode).toBe(403)
+    done()
+
+  it 'returns 422 unless the target user is in "redeemers"', utils.wrap (done) ->
+    otherStudent = yield utils.initUser({role: 'student'})
+    [res, body] = yield request.delAsync {uri: @url, json: { userID: otherStudent.id } }
+    expect(res.statusCode).toBe(422)
+    done()
+    
 
 describe 'GET /db/prepaid?creator=:id', ->
   beforeEach utils.wrap (done) ->
