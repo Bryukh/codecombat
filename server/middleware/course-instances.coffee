@@ -10,6 +10,8 @@ Course = require '../models/Course'
 User = require '../models/User'
 Level = require '../models/Level'
 parse = require '../commons/parse'
+{objectIdFromTimestamp} = require '../lib/utils'
+Prepaid = require '../models/Prepaid'
 
 module.exports =
   addMembers: wrap (req, res) ->
@@ -123,3 +125,28 @@ module.exports =
     classroom = classroom.toObject({req: req})
 
     res.status(200).send(classroom)
+
+    
+  fetchRecent: wrap (req, res) ->
+    query = {$and: [{name: {$ne: 'Single Player'}}, {hourOfCode: {$ne: true}}]}
+    query["$and"].push(_id: {$gte: objectIdFromTimestamp(req.body.startDay + "T00:00:00.000Z")}) if req.body.startDay?
+    query["$and"].push(_id: {$lt: objectIdFromTimestamp(req.body.endDay + "T00:00:00.000Z")}) if req.body.endDay?
+    courseInstances = yield CourseInstance.find(query, {courseID: 1, members: 1, ownerID: 1})
+    
+    userIDs = []
+    for courseInstance in courseInstances
+      if members = courseInstance.get('members')
+        userIDs.push(userID) for userID in members
+    users = yield User.find({_id: {$in: userIDs}}, {coursePrepaid: 1})
+    
+    prepaidIDs = []
+    for user in users
+      if prepaidID = user.get('coursePrepaid')
+        prepaidIDs.push(prepaidID._id)
+    prepaids = yield Prepaid.find({_id: {$in: prepaidIDs}}, {properties: 1})
+    
+    res.send({
+      courseInstances: (courseInstance.toObject({req: req}) for courseInstance in courseInstances)
+      students: (user.toObject({req: req}) for user in users)
+      prepaids: (prepaid.toObject({req: req}) for prepaid in prepaids)
+    })
