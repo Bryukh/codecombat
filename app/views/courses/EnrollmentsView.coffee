@@ -4,6 +4,7 @@ State = require 'models/State'
 Prepaids = require 'collections/Prepaids'
 template = require 'templates/courses/enrollments-view'
 Users = require 'collections/Users'
+Courses = require 'collections/Courses'
 
 module.exports = class EnrollmentsView extends RootView
   id: 'enrollments-view'
@@ -11,7 +12,6 @@ module.exports = class EnrollmentsView extends RootView
 
   events:
     'input #students-input': 'onInputStudentsInput'
-    'click .purchase-now': 'onClickPurchaseButton'
 
   initialize: (options) ->
     me.set('role', 'teacher') # TODO: Remove later
@@ -27,6 +27,8 @@ module.exports = class EnrollmentsView extends RootView
     @ownedClassrooms = new Classrooms()
     @supermodel.trackRequest @ownedClassrooms.fetchMine({data: {project: '_id'}})
     
+    @courses = new Courses()
+    @supermodel.trackRequest @courses.fetch({data: { project: 'free' }})
     @members = new Users()
     @classrooms = new Classrooms()
     @classrooms.comparator = '_id'
