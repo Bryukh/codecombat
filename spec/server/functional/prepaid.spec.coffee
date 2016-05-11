@@ -74,8 +74,8 @@ describe 'POST /db/prepaid/:handle/redeemers', ->
   beforeEach utils.wrap (done) ->
     yield utils.clearModels([Course, CourseInstance, Payment, Prepaid, User])
     @teacher = yield utils.initUser({role: 'teacher'})
-    admin = yield utils.initAdmin()
-    yield utils.loginUser(admin)
+    @admin = yield utils.initAdmin()
+    yield utils.loginUser(@admin)
     @prepaid = yield utils.makePrepaid({ creator: @teacher.id })
     yield utils.loginUser(@teacher)
     @student = yield utils.initUser()
@@ -139,6 +139,23 @@ describe 'POST /db/prepaid/:handle/redeemers', ->
     expect(res.statusCode).toBe(200)
     prepaid = yield Prepaid.findById(body._id)
     expect(prepaid.get('redeemers').length).toBe(1)
+    student = yield User.findById(@student.id)
+    expect(student.get('coursePrepaid')._id.equals(@prepaid._id)).toBe(true)
+    done()
+    
+  it 'updates the user if their enrollment is expired', utils.wrap (done) ->
+    yield utils.loginUser(@admin)
+    prepaid = yield utils.makePrepaid({
+      creator: @teacher.id
+      startDate: moment().subtract(2, 'month').toISOString()
+      endDate: moment().subtract(1, 'month').toISOString()
+    })
+    @student.set('coursePrepaid', _.pick(prepaid.toObject(), '_id', 'startDate', 'endDate'))
+    yield @student.save()
+    yield utils.loginUser(@teacher)
+    [res, body] = yield request.postAsync {uri: @url, json: { userID: @student.id } }
+    expect(body.redeemers.length).toBe(1)
+    expect(res.statusCode).toBe(201)
     student = yield User.findById(@student.id)
     expect(student.get('coursePrepaid')._id.equals(@prepaid._id)).toBe(true)
     done()

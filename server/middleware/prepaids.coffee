@@ -57,7 +57,7 @@ module.exports =
     if not user
       throw new errors.NotFound('User not found.')
 
-    if user.get('coursePrepaid')?._id
+    if user.isEnrolled()
       return res.status(200).send(prepaid.toObject({req: req}))
     if user.isTeacher()
       throw new errors.Forbidden('Teachers may not be enrolled')
