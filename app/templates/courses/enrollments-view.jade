@@ -54,25 +54,25 @@ mixin enrollmentStats
   .small-details
     span(data-i18n='teacher.total_unique_students')
     span.spr :
-    = view.totalEnrolled + view.totalNotEnrolled
+    = view.state.get('totalEnrolled') + view.state.get('totalNotEnrolled')
   .small-details
     span(data-i18n='teacher.total_enrolled_students')
     span.spr :
-    = view.totalEnrolled
+    = view.state.get('totalEnrolled')
     
   h5.small-details.m-t-3
     span(data-i18n='teacher.unenrolled_students')
   each classroom in view.classrooms.models
-    if classroom.get('members').length > 0 && view.classroomNotEnrolledMap && view.classroomNotEnrolledMap[classroom.id] > 0
+    if classroom.get('members').length > 0 && view.state.get('classroomNotEnrolledMap')[classroom.id] > 0
       .small-details
         span= classroom.get('name')
         span.spr : 
-        span= view.classroomNotEnrolledMap[classroom.id]
+        span= view.state.get('classroomNotEnrolledMap')[classroom.id]
 
   .small-details
     span(data-i18n='teacher.total_unenrolled')
     span.spr :
-    = view.totalNotEnrolled
+    = view.state.get('totalNotEnrolled')
   
   //- .enroll-students.btn.btn-lg.btn-navy
   //-   span(data-i18n='teacher.enroll_students')
@@ -81,17 +81,7 @@ mixin addCredits
   .text-center
     h5(data-i18n='teacher.add_enrollment_credits')
     div.m-t-1
-      input#students-input.text-center.enrollment-count(value=view.numberOfStudents type='number')
-    div.m-t-1
-      if view.state === 'purchasing'
-        .purchase-now.btn.btn-lg.btn-forest.disabled
-          span(data-i18n='teacher.purchasing')
-      else if view.state === 'purchased'
-        .purchase-now.btn.btn-lg.btn-forest
-          span(data-i18n='teacher.purchased')
-      else
-        .purchase-now.btn.btn-lg.btn-forest
-          span(data-i18n='teacher.purchase_now')
+      input#students-input.text-center.enrollment-count(value=view.state.get('numberOfStudents') type='number')
 
 mixin howToEnroll
   .how-to-enroll.small-details
