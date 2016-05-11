@@ -42,13 +42,13 @@ module.exports =
       throw new errors.Forbidden('You must own the classroom to add members')
       
     # Only the enrolled users
-    users = yield User.find({ _id: { $in: userIDs }}).select('coursePrepaidID')
-    usersArePrepaid = _.all((user.get('coursePrepaidID') for user in users))
+    users = yield User.find({ _id: { $in: userIDs }}).select('coursePrepaid')
+    usersAreEnrolled = _.all((user.isEnrolled() for user in users))
     
     course = yield Course.findById courseInstance.get('courseID')
     throw new errors.NotFound('Course referenced by course instance not found') unless course
     
-    if not (course.get('free') or usersArePrepaid)
+    if not (course.get('free') or usersAreEnrolled)
       throw new errors.PaymentRequired('Cannot add users to a course instance until they are added to a prepaid')
     
     userObjectIDs = (mongoose.Types.ObjectId(userID) for userID in userIDs)

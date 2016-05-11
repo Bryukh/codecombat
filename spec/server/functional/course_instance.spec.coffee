@@ -98,30 +98,22 @@ describe 'POST /db/course_instance', ->
     done()
 
 
-describe 'POST /db/course_instance/:id/members', ->
+fdescribe 'POST /db/course_instance/:id/members', ->
 
   beforeEach utils.wrap (done) ->
-    utils.clearModels([CourseInstance, Course, User, Classroom, Prepaid])
+    yield utils.clearModels([CourseInstance, Course, User, Classroom, Prepaid, Campaign, Level])
     @teacher = yield utils.initUser({role: 'teacher'})
+    admin = yield utils.initAdmin()
+    yield utils.loginUser(admin)
+    @level = yield utils.makeLevel({type: 'course'})
+    @campaign = yield utils.makeCampaign({}, {levels: [@level]})
+    @course = yield utils.makeCourse({free: true}, {campaign: @campaign})
+    @student = yield utils.initUser({role: 'student'})
+    @prepaid = yield utils.makePrepaid({creator: @teacher.id})
+    members = [@student]
     yield utils.loginUser(@teacher)
-    courseData = _.extend({free: true}, courseFixture)
-    @course = yield new Course(courseData).save()
-    classroomData = _.extend({ownerID: @teacher._id}, classroomFixture)
-    @classroom = yield new Classroom(classroomData).save()
-    url = getURL('/db/course_instance')
-    data = {
-      name: 'Some Name'
-      courseID: @course.id
-      classroomID: @classroom.id
-    }
-    [res, body] = yield request.postAsync {uri: url, json: data}
-    @courseInstance = yield CourseInstance.findById res.body._id
-    @student = yield utils.initUser()
-    @prepaid = yield new Prepaid({
-      type: 'course'
-      maxRedeemers: 10
-      redeemers: []
-    }).save()
+    @classroom = yield utils.makeClassroom({aceConfig: { language: 'javascript' }}, { members })
+    @courseInstance = yield utils.makeCourseInstance({}, { @course, @classroom })
     done()
 
   it 'adds an array of members to the given CourseInstance', utils.wrap (done) ->
@@ -135,8 +127,6 @@ describe 'POST /db/course_instance/:id/members', ->
     done()
 
   it 'adds a member to the given CourseInstance', utils.wrap (done) ->
-    @classroom.set('members', [@student._id])
-    yield @classroom.save()
     url = getURL("/db/course_instance/#{@courseInstance.id}/members")
     [res, body] = yield request.postAsync {uri: url, json: {userID: @student.id}}
     expect(res.statusCode).toBe(200)
@@ -145,8 +135,6 @@ describe 'POST /db/course_instance/:id/members', ->
     done()
 
   it 'adds the CourseInstance id to the user', utils.wrap (done) ->
-    @classroom.set('members', [@student._id])
-    yield @classroom.save()
     url = getURL("/db/course_instance/#{@courseInstance.id}/members")
     [res, body] = yield request.postAsync {uri: url, json: {userID: @student.id}}
     user = yield User.findById(@student.id)
@@ -154,14 +142,14 @@ describe 'POST /db/course_instance/:id/members', ->
     done()
 
   it 'return 403 if the member is not in the classroom', utils.wrap (done) ->
+    @classroom.set('members', [])
+    yield @classroom.save()
     url = getURL("/db/course_instance/#{@courseInstance.id}/members")
     [res, body] = yield request.postAsync {uri: url, json: {userID: @student.id}}
     expect(res.statusCode).toBe(403)
     done()
 
   it 'returns 403 if the user does not own the course instance and is not adding self', utils.wrap (done) ->
-    @classroom.set('members', [@student._id])
-    yield @classroom.save()
     otherUser = yield utils.initUser()
     yield utils.loginUser(otherUser)
     url = getURL("/db/course_instance/#{@courseInstance.id}/members")
@@ -171,9 +159,7 @@ describe 'POST /db/course_instance/:id/members', ->
 
   it 'returns 200 if the user is a member of the classroom and is adding self', ->
 
-  it 'return 402 if the course is not free and the user is not in a prepaid', utils.wrap (done) ->
-    @classroom.set('members', [@student._id])
-    yield @classroom.save()
+  it 'return 402 if the course is not free and the user is not enrolled', utils.wrap (done) ->
     @course.set('free', false)
     yield @course.save()
     url = getURL("/db/course_instance/#{@courseInstance.id}/members")
@@ -181,12 +167,10 @@ describe 'POST /db/course_instance/:id/members', ->
     expect(res.statusCode).toBe(402)
     done()
           
-  it 'works if the course is not free and the user is in a prepaid', utils.wrap (done) ->
-    @classroom.set('members', [@student._id])
-    yield @classroom.save()
+  it 'works if the course is not free and the user is enrolled', utils.wrap (done) ->
     @course.set('free', false)
     yield @course.save()
-    @student.set('coursePrepaidID', @prepaid._id)
+    @student.set('coursePrepaid', _.pick(@prepaid.toObject(), '_id', 'startDate', 'endDate'))
     yield @student.save()
     url = getURL("/db/course_instance/#{@courseInstance.id}/members")
     [res, body] = yield request.postAsync {uri: url, json: {userID: @student.id}}
