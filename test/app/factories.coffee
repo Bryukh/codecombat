@@ -9,6 +9,7 @@ Achievement = require 'models/Achievement'
 EarnedAchievement = require 'models/EarnedAchievement'
 ThangType = require 'models/ThangType'
 Users = require 'collections/Users'
+Prepaid = require 'models/Prepaid'
 
 module.exports = {
 
@@ -148,6 +149,18 @@ module.exports = {
     }, attrs)
     return new ThangType(attrs)
 
+  makePrepaid: (attrs, sources={}) ->
+    _id = _.uniqueId('prepaid_')
+    attrs = _.extend({}, {
+      _id
+      type: 'course'
+      maxRedeemers: 10
+      endDate: moment().add(1, 'month').toISOString()
+      startDate: moment().subtract(1, 'month').toISOString()
+      redeemers: []
+    }, attrs)
+
+    return new Prepaid(attrs)
 } 
   
 

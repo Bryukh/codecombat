@@ -19,3 +19,15 @@ module.exports = class Prepaid extends CocoModel
       maxRedeemers = @get('maxRedeemers')
       if _.isString(maxRedeemers)
         @set 'maxRedeemers', parseInt(maxRedeemers)
+        
+  status: ->
+    endDate = @get('endDate')
+    if endDate and new Date(endDate) < new Date()
+      return 'expired'
+
+    startDate = @get('startDate')
+    if startDate and new Date(startDate) > new Date()
+      return 'pending'
+      
+    return 'available'
+    

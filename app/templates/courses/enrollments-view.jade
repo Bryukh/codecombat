@@ -38,14 +38,48 @@ block content
         span(data-i18n='teacher.enrollments_blurb_2')
         
       .row.m-t-3
-        .col-xs-4
-          +enrollmentStats
-        .col-xs-4
-          +addCredits
-        .col-xs-3.col-xs-offset-1
-          +howToEnroll
-      +quoteSection
+        .col-md-9
+          if view.state.get('prepaidGroups').available
+            h5.m-b-1 Available Credits
+            .row
+              for prepaid in view.state.get('prepaidGroups').available
+                .col-sm-4.col-xs-6
+                  +prepaidCard(prepaid)
+            
+          if view.state.get('prepaidGroups').pending
+            h5.m-b-1.m-t-3 Pending Credits
+            .row
+              for prepaid in view.state.get('prepaidGroups').pending
+                .col-sm-4.col-xs-6
+                  +prepaidCard(prepaid, 'pending-prepaid-card')
+          
+        .col-md-3
+          h5 Get More Credits
+        
+        
+      //.row.m-t-3
+      //  .col-xs-4
+      //    +enrollmentStats
+      //  .col-xs-4
+      //    +addCredits
+      //  .col-xs-3.col-xs-offset-1
+      //    +howToEnroll
+      //+quoteSection
       
+mixin prepaidCard(prepaid, className)
+  .prepaid-card.bg-navy.text-center.m-b-2.p-a-2(class=className)
+    h1.m-t-2.m-b-0= prepaid.openSpots()
+    div credits
+    hr
+    .pull-left start date:
+    .pull-right= moment(prepaid.get('startDate')).format('l')
+    .clearfix
+      
+    .pull-left end date:
+    .pull-right= moment(prepaid.get('endDate')).format('l')
+    .clearfix
+    
+        
 mixin enrollmentStats
   h5
     span(data-i18n='teacher.credits_available')

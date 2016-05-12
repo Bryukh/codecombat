@@ -21,6 +21,10 @@ module.exports = class EnrollmentsView extends RootView
       classroomEnrolledMap: {}
       numberOfStudents: 15
       totalCourses: 0
+      prepaidGroups: {
+        'available': []
+        'pending': []
+      }
     })
 
     @courses = new Courses()
@@ -41,6 +45,7 @@ module.exports = class EnrollmentsView extends RootView
   onLoaded: ->
     @calculateEnrollmentStats()
     @state.set('totalCourses', @courses.size())
+    @state.set('prepaidGroups', @prepaids.groupBy((p) -> p.status()))
     super()
 
   calculateEnrollmentStats: ->
