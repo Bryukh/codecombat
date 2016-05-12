@@ -13,9 +13,7 @@ module.exports = class EnrollmentsView extends RootView
   events:
     'input #students-input': 'onInputStudentsInput'
 
-  initialize: (options) ->
-    me.set('role', 'teacher') # TODO: Remove later
-    
+  initialize: ->
     @state = new State({
       totalEnrolled: 0
       totalNotEnrolled: 0
