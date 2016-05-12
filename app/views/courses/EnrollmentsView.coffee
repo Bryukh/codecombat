@@ -5,6 +5,7 @@ Prepaids = require 'collections/Prepaids'
 template = require 'templates/courses/enrollments-view'
 Users = require 'collections/Users'
 Courses = require 'collections/Courses'
+HowToEnrollModal = require 'views/teachers/HowToEnrollModal'
 
 module.exports = class EnrollmentsView extends RootView
   id: 'enrollments-view'
@@ -12,6 +13,7 @@ module.exports = class EnrollmentsView extends RootView
 
   events:
     'input #students-input': 'onInputStudentsInput'
+    'click #how-to-enroll-link': 'onClickHowToEnrollLink'
 
   initialize: ->
     @state = new State({
@@ -86,6 +88,9 @@ module.exports = class EnrollmentsView extends RootView
         not @members.get(memberID) or @members.get(memberID)?.get('deleted')
       )
     true
+
+  onClickHowToEnrollLink: ->
+    @openModalView(new HowToEnrollModal())
 
   onInputStudentsInput: ->
     input = @$('#students-input').val()
