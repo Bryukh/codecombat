@@ -73,13 +73,14 @@ mixin prepaidCard(prepaid, className)
     h1.m-t-2.m-b-0= prepaid.openSpots()
     div credits
     hr
-    .pull-left start date:
-    .pull-right= moment(prepaid.get('startDate')).format('l')
-    .clearfix
-      
-    .pull-left end date:
-    .pull-right= moment(prepaid.get('endDate')).format('l')
-    .clearfix
+    em
+      .pull-left start date:
+      .pull-right= moment(prepaid.get('startDate')).format('l')
+      .clearfix
+
+      .pull-left end date:
+      .pull-right= moment(prepaid.get('endDate')).format('l')
+      .clearfix
     
         
 mixin enrollmentStats
