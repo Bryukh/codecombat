@@ -32,9 +32,9 @@ block content
       
     .container.m-t-5
       h3(data-i18n='teacher.enrollments')
-      h4
+      h4#enrollments-blurb
         span(data-i18n='teacher.enrollments_blurb_1')
-        span  2&ndash;8 
+        span  2&ndash;#{view.state.get('totalCourses')} 
         span(data-i18n='teacher.enrollments_blurb_2')
         
       .row.m-t-3

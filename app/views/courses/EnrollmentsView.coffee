@@ -20,11 +20,9 @@ module.exports = class EnrollmentsView extends RootView
       classroomNotEnrolledMap: {}
       classroomEnrolledMap: {}
       numberOfStudents: 15
+      totalCourses: 0
     })
 
-    @ownedClassrooms = new Classrooms()
-    @supermodel.trackRequest @ownedClassrooms.fetchMine({data: {project: '_id'}})
-    
     @courses = new Courses()
     @supermodel.trackRequest @courses.fetch({data: { project: 'free' }})
     @members = new Users()
@@ -42,6 +40,7 @@ module.exports = class EnrollmentsView extends RootView
 
   onLoaded: ->
     @calculateEnrollmentStats()
+    @state.set('totalCourses', @courses.size())
     super()
 
   calculateEnrollmentStats: ->
