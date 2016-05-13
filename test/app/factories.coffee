@@ -161,6 +161,20 @@ module.exports = {
     }, attrs)
 
     return new Prepaid(attrs)
+    
+  makeTrialRequest: (attrs, sources={}) ->
+    _id = _.uniqueId('trial_request_')
+    attrs = _.extend({}, {
+      _id
+      properties: {
+        firstName: 'Mr'
+        lastName: 'Professorson'
+        name: 'Mr Professorson'
+        email: 'an@email.com'
+        phoneNumber: '555-555-5555'
+        organization: 'Greendale'
+      }
+    }, attrs)
 } 
   
 

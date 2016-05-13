@@ -6,6 +6,7 @@ template = require 'templates/courses/enrollments-view'
 Users = require 'collections/Users'
 Courses = require 'collections/Courses'
 HowToEnrollModal = require 'views/teachers/HowToEnrollModal'
+TeachersContactModal = require 'views/teachers/TeachersContactModal'
 
 module.exports = class EnrollmentsView extends RootView
   id: 'enrollments-view'
@@ -14,6 +15,7 @@ module.exports = class EnrollmentsView extends RootView
   events:
     'input #students-input': 'onInputStudentsInput'
     'click #how-to-enroll-link': 'onClickHowToEnrollLink'
+    'click #contact-us-btn': 'onClickContactUsButton'
 
   initialize: ->
     @state = new State({
@@ -60,9 +62,11 @@ module.exports = class EnrollmentsView extends RootView
       sum + (if user.get('coursePrepaidID') then 1 else 0)
     ), 0)
     
-    @state.set('totalNotEnrolled', _.reduce @members.models, ((sum, user) ->
+    totalNotEnrolled = _.reduce @members.models, ((sum, user) ->
       sum + (if not user.get('coursePrepaidID') then 1 else 0)
-    ), 0)
+    ), 0
+    @state.set('totalNotEnrolled', totalNotEnrolled)
+    @state.set('numberOfStudents', totalNotEnrolled)
     
     @state.set('classroomEnrolledMap', _.reduce @classrooms.models, ((map, classroom) =>
       enrolled = _.reduce classroom.get('members'), ((sum, userID) =>
@@ -92,12 +96,15 @@ module.exports = class EnrollmentsView extends RootView
   onClickHowToEnrollLink: ->
     @openModalView(new HowToEnrollModal())
 
+  onClickContactUsButton: ->
+    @openModalView(new TeachersContactModal({ enrollmentsNeeded: @state.get('numberOfStudents') }))
+    
   onInputStudentsInput: ->
     input = @$('#students-input').val()
     if input isnt "" and (parseFloat(input) isnt parseInt(input) or _.isNaN parseInt(input))
       @$('#students-input').val(@state.get('numberOfStudents'))
     else
-      @state.set('numberOfStudent', Math.max(parseInt(@$('#students-input').val()) or 0, 0))
+      @state.set('numberOfStudents', Math.max(parseInt(@$('#students-input').val()) or 0, 0))
 
   numberOfStudentsIsValid: -> 0 < @get('numberOfStudents') < 100000
   

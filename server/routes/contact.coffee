@@ -47,7 +47,9 @@ createMailContext = (req, done) ->
     email_data:
       subject: "[CodeCombat] #{subject ? ('Feedback - ' + (sender or user.get('email')))}"
       content: content
-  if recipientID and (user.isAdmin() or ('employer' in (user.get('permissions') ? [])))
+  if recipientID is 'schools@codecombat.com'
+    context.recipient.address is 'schools@codecombat.com'
+  else if recipientID and (user.isAdmin() or ('employer' in (user.get('permissions') ? [])))
     User.findById(recipientID, 'email').exec (err, document) ->
       if err
         log.error "Error looking up recipient to email from #{recipientID}: #{err}" if err

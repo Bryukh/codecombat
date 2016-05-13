@@ -2,6 +2,7 @@ EnrollmentsView = require 'views/courses/EnrollmentsView'
 Courses = require 'collections/Courses'
 Prepaids = require 'collections/Prepaids'
 factories = require 'test/app/factories'
+TeachersContactModal = require 'views/teachers/TeachersContactModal'
 
 describe 'EnrollmentsView', ->
   
@@ -42,3 +43,13 @@ describe 'EnrollmentsView', ->
 
   it 'shows how many courses there are which enrolled students will have access to', ->
     expect(_.contains(@view.$('#enrollments-blurb').text(), '2–4')).toBe(true)
+
+  describe '"Contact Us" button', ->
+    it 'opens a TeachersContactModal, passing in the number of enrollments', ->
+      spyOn(@view, 'openModalView')
+      @view.state.set('numberOfStudents', 20)
+      @view.$('#contact-us-btn').click()
+      expect(view.openModalView).toHaveBeenCalled()
+      args = view.openModalView.calls.argsFor(0)
+      expect(args[0] instanceof TeachersContactModal).toBe(true)
+      expect(args[0].enrollmentsNeeded).toBe(20)

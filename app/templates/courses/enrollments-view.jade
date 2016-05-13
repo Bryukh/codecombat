@@ -42,7 +42,7 @@ block content
         span(data-i18n='teacher.enrollments_blurb_2')
         
       .row.m-t-3
-        .col-md-9
+        .col-md-9#prepaids-col
           if view.state.get('prepaidGroups').available
             h5.m-b-1 Available Credits
             .row
@@ -58,14 +58,13 @@ block content
                   +prepaidCard(prepaid, 'pending-prepaid-card')
           
         .col-md-3
-          h5 Get More Credits
-        
-        
+          +addCredits
+
+
       //.row.m-t-3
       //  .col-xs-4
       //    +enrollmentStats
       //  .col-xs-4
-      //    +addCredits
       //+quoteSection
       
 mixin prepaidCard(prepaid, className)
@@ -116,9 +115,13 @@ mixin enrollmentStats
 
 mixin addCredits
   .text-center
-    h5(data-i18n='teacher.add_enrollment_credits')
-    div.m-t-1
-      input#students-input.text-center.enrollment-count(value=view.state.get('numberOfStudents') type='number')
+    h5 Get More Credits
+    p Number of enrollments needed:
+    div.m-t-2
+      input#students-input.enrollment-count.text-center(value=view.state.get('numberOfStudents') type='number')
+    strong credits
+    p.m-y-2 We'll help you build a solution that meets the needs of your class, school or district.
+    button#contact-us-btn.btn-lg.btn.btn-forest.btn-block Contact Us
 
 mixin quoteSection
   .text-center.m-t-5
